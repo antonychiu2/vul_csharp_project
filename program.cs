@@ -19,7 +19,7 @@ public class Program
     {
         foreach (var entry in archive.Entries)
         {
-            string file = entry.FullName;
+            string file = entry.FullName;  
             if (!string.IsNullOrEmpty(file))
             {
                 string destFileName = Path.Combine(destDirectory, file);

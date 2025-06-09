@@ -1,31 +1,91 @@
+using Newtonsoft.Json;
 using System;
-using System.Net;
-using System.IO.Compression;
+using System.IO;
+
 
 public class Program
 {
-    public static void Main(string[] args)
+    internal class Test
     {
-        using (ZipArchive zip = ZipFile.Open("C:\\Users\\user\\Desktop\\file.zip", ZipArchiveMode.Read))
-        {
-            UnzipFile(zip, "C:\\Users\\user\\Desktop\\unzipped");
-            Program2.UnzipFile(zip, "C:\\Users\\user\\Desktop\\unzipped2");
-            Program3.UnzipFileSafe(zip, "C:\\Users\\user\\Desktop\\unzipped_safe");
-        }
+        public string A { get; set; }
+        public bool B { get; set; }
 
+        public override string ToString()
+        {
+            return ">" + this.A + ":" + this.B;
+        }
     }
 
-    public static void UnzipFile(ZipArchive archive, string destDirectory)
+    internal class Converter : JsonConverter<Test>
     {
-        foreach (var entry in archive.Entries)
+        public override void WriteJson(JsonWriter writer, Test? value, JsonSerializer serializer)
         {
-            string file = entry.FullName;
-            if (!string.IsNullOrEmpty(file))
-            {
-                string destFileName = Path.Combine(destDirectory, file);
-                entry.ExtractToFile(destFileName, true);
-
-            }
+            throw new NotImplementedException();
         }
+
+        public override Test? ReadJson(JsonReader reader, Type objectType, Test? existingValue,
+            bool hasExistingValue,
+            JsonSerializer serializer)
+        {
+            while (reader.Read()) ;
+            return new Test { A = "aha", B = false };
+        }
+    }
+
+    static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddControllers();
+        var app = builder.Build();
+        app.MapControllers();
+        app.Run();
+        
+        string inp = File.ReadAllText("./test.json");
+
+        Console.WriteLine(JsonConvert.DeserializeObject(inp));
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, new JsonSerializerSettings()
+        {
+            TypeNameHandling = TypeNameHandling.None
+        }));
+
+        Console.WriteLine(JsonConvert.DeserializeObject<Test>(inp));
+        
+        var a = new Converter();
+        Console.WriteLine(JsonConvert.DeserializeObject<Test>(inp, a));
+        Console.WriteLine(JsonConvert.DeserializeObject<Test>(inp, new Converter()));
+        Console.WriteLine(JsonConvert.DeserializeObject<Test>(inp, new Converter(), new Converter()));
+
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, new JsonSerializerSettings()
+        {
+            TypeNameHandling = TypeNameHandling.None
+        }));
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, new JsonSerializerSettings()));
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, settings()));
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, S.s));
+
+        Console.WriteLine(JsonConvert.DeserializeObject<Test>(inp, new JsonSerializerSettings()));
+
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, typeof(Test)));
+
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, typeof(Test), new Converter()));
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, typeof(Test), new Converter(), new Converter()));
+
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, typeof(Test), new JsonSerializerSettings()));
+        
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, typeof(Test), new JsonSerializerSettings { DateFormatString = "yyyy" }));
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, typeof(Test), new JsonSerializerSettings
+        {
+            DateFormatString = "yyyy",
+        }));
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, typeof(Test), new JsonSerializerSettings
+        {
+            DateFormatString = "yyyy"
+        }));
+        Console.WriteLine(JsonConvert.DeserializeObject(inp, typeof(Test), new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None }));
+    }
+
+    static JsonSerializerSettings settings()
+    {
+        return new JsonSerializerSettings();
     }
 }

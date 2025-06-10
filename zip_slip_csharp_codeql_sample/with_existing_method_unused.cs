@@ -8,7 +8,7 @@ public class Program2
     {
         foreach (var entry in archive.Entries)
         {
-            string file = entry.FullName;
+            string file = GetRelativePath(entry.FullName);
             if (!string.IsNullOrEmpty(file))
             {
                 string destFileName = Path.Combine(destDirectory, file);
